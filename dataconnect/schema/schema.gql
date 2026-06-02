@@ -1,0 +1,55 @@
+type User @table {
+  username: String!
+  email: String!
+  passwordHash: String!
+  createdAt: Timestamp!
+  displayName: String
+  bio: String
+  profilePictureUrl: String
+}
+
+type Circle @table {
+  name: String!
+  inviteCode: String!
+  owner: User!
+  createdAt: Timestamp!
+  description: String
+  profilePictureUrl: String
+}
+
+type Membership @table(key: ["user", "circle"]) {
+  user: User!
+  circle: Circle!
+  joinedAt: Timestamp!
+  role: String
+}
+
+type Post @table {
+  author: User!
+  circle: Circle!
+  type: String!
+  createdAt: Timestamp!
+  caption: String
+  mediaUrl: String
+  content: String
+}
+
+type Event @table {
+  circle: Circle!
+  creator: User!
+  name: String!
+  startTime: Timestamp!
+  endTime: Timestamp!
+  createdAt: Timestamp!
+  description: String
+  location: String
+  rsvpCount: Int
+}
+
+type EventGalleryPhoto @table {
+  event: Event!
+  uploader: User!
+  photoUrl: String!
+  createdAt: Timestamp!
+  caption: String
+}
