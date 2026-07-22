@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../services/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { LogOut, Settings, Plus, Home, Users } from 'lucide-react'; 
+import { LogOut, Settings, Plus, Home, Users, Camera, Hash } from 'lucide-react'; 
 
 import {
   createCircle,
@@ -16,6 +16,14 @@ import {
 
 import { uploadToCloudinary } from "../services/cloudinary";
 
+// Premium gradients for default circle avatars
+const AVATAR_GRADIENTS = [
+  "from-amber-200 to-orange-100 text-amber-700",
+  "from-emerald-200 to-teal-100 text-emerald-700",
+  "from-indigo-200 to-blue-100 text-indigo-700",
+  "from-rose-200 to-pink-100 text-rose-700",
+];
+
 export default function Sidebar() {
   const navigate = useNavigate();
   const user = auth.currentUser;
@@ -27,6 +35,7 @@ export default function Sidebar() {
   const [circleName, setCircleName] = useState("");
   const [circleType, setCircleType] = useState("Family");
   const [inviteCode, setInviteCode] = useState("");
+  const [profileData, setProfileData] = useState(null);
 
   // Load User Data and Circles
   useEffect(() => {
@@ -48,7 +57,10 @@ export default function Sidebar() {
     };
 
     load();
+
+    
   }, [user]);
+
 
   const handleCreateCircle = async () => {
     if (!circleName.trim()) return;
@@ -97,11 +109,12 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="w-72 bg-[#faf7f4] border-r px-6 py-6 flex flex-col h-screen sticky top-0">
+      <aside className="w-[300px] bg-white/40 backdrop-blur-2xl border-r border-white/60 px-6 py-8 flex flex-col h-screen sticky top-0 shadow-[4px_0_24px_rgb(0,0,0,0.02)] z-10">
         <div className="flex-1 overflow-y-auto no-scrollbar">
+          
           {/* Logo Section */}
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-2xl font-serif font-bold tracking-tight text-neutral-900">
+          <div className="flex justify-between items-center mb-10">
+            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-br from-slate-900 to-slate-600 bg-clip-text text-transparent">
               CircleKin
             </h1>
           </div>
@@ -109,37 +122,37 @@ export default function Sidebar() {
           {/* Navigation */}
           <div
             onClick={() => navigate("/home")}
-            className="group bg-[#e7f1ec] hover:bg-[#d9e8e1] rounded-2xl px-4 py-3 mb-8 flex items-center gap-3 cursor-pointer transition-all"
+            className="group bg-white/60 border border-white hover:bg-white rounded-2xl px-4 py-3.5 mb-10 flex items-center gap-3 cursor-pointer transition-all shadow-[0_2px_10px_rgb(0,0,0,0.02)] hover:shadow-[0_4px_15px_rgb(0,0,0,0.05)]"
           >
-            <Home size={20} className="text-emerald-700" />
-            <span className="font-semibold text-emerald-900">Home Feed</span>
+            <div className="p-1.5 rounded-xl bg-indigo-50 text-indigo-500 group-hover:scale-110 transition-transform duration-300">
+              <Home size={18} />
+            </div>
+            <span className="font-semibold text-slate-700">Home Feed</span>
           </div>
 
-          {/* Circles List */}
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-[11px] font-bold tracking-widest text-neutral-400 uppercase">
+          {/* Circles List Header */}
+          <div className="flex justify-between items-center mb-4 px-1">
+            <p className="text-xs font-bold tracking-wider text-slate-400 uppercase">
               My Circles
             </p>
             <button
               onClick={() => setShowCreate(true)}
-              className="p-1 hover:bg-neutral-200 rounded-full transition-colors"
+              className="p-1.5 hover:bg-white rounded-full text-slate-400 hover:text-slate-800 transition-colors shadow-sm border border-transparent hover:border-white/50"
             >
-              <Plus size={18} />
+              <Plus size={16} strokeWidth={2.5} />
             </button>
           </div>
 
-          <div className="space-y-3">
+          {/* Circles Mapping */}
+          <div className="space-y-2">
             {circles.map((c, i) => (
               <div
                 key={c.id}
-                className="flex items-center gap-3 cursor-pointer group p-1 rounded-xl hover:bg-white/50 transition-all"
+                className="flex items-center gap-3 cursor-pointer group p-2 rounded-2xl hover:bg-white/60 hover:shadow-sm border border-transparent hover:border-white transition-all"
               >
                 <label className="relative shrink-0 cursor-pointer">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-neutral-700 overflow-hidden border-2 border-white shadow-sm"
-                    style={{
-                      backgroundColor: ["#fde68a", "#bbf7d0", "#ddd6fe", "#bae6fd"][i % 4],
-                    }}
+                    className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-lg overflow-hidden border-2 border-white shadow-sm bg-gradient-to-br ${AVATAR_GRADIENTS[i % 4]}`}
                   >
                     {c.photoUrl ? (
                       <img src={c.photoUrl} className="w-full h-full object-cover" alt="" />
@@ -147,8 +160,8 @@ export default function Sidebar() {
                       c.name[0].toUpperCase()
                     )}
                   </div>
-                  <div className="absolute inset-0 bg-black/40 text-white text-[10px] opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-full transition-opacity">
-                    Edit
+                  <div className="absolute inset-0 bg-slate-900/40 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-full transition-opacity backdrop-blur-sm">
+                    <Camera size={14} />
                   </div>
                   <input
                     type="file"
@@ -159,8 +172,8 @@ export default function Sidebar() {
                 </label>
 
                 <div className="min-w-0 flex-1" onClick={() => navigate(`/circle/${c.id}`)}>
-                  <p className="font-semibold text-sm text-neutral-800 truncate">{c.name}</p>
-                  <p className="text-[11px] text-neutral-500 font-medium">
+                  <p className="font-bold text-sm text-slate-800 truncate">{c.name}</p>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
                     {c.members?.length || 0} members
                   </p>
                 </div>
@@ -168,93 +181,101 @@ export default function Sidebar() {
             ))}
           </div>
 
+          {/* Join Button */}
           <button
             onClick={() => setShowJoin(true)}
-            className="mt-8 w-full border-2 border-neutral-200 hover:border-black rounded-2xl py-3 text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
+            className="mt-6 w-full bg-white/50 border border-white hover:bg-white rounded-2xl py-3.5 text-sm font-semibold text-slate-600 flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm hover:shadow-md"
           >
-            <Users size={18} /> Join a Circle
+            <Hash size={16} className="text-slate-400" /> Join with Code
           </button>
         </div>
 
-        {/* ✅ ENHANCED PROFILE SECTION WITH NAVIGATION */}
-        <div className="mt-6 pt-6 border-t border-neutral-200">
-          <div className="flex items-center gap-3 p-2 rounded-2xl hover:bg-white hover:shadow-sm transition-all cursor-pointer group">
-            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold border border-orange-200 shrink-0 shadow-inner">
+      {/* PROFILE SECTION */}
+        <div className="mt-6 pt-6 border-t border-white/50">
+          <div className="bg-white/60 border border-white rounded-2xl p-2.5 flex items-center justify-between shadow-[0_4px_15px_rgb(0,0,0,0.02)] transition-all hover:shadow-[0_4px_15px_rgb(0,0,0,0.05)]">
+            
+            {/* Avatar Only */}
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-100 to-orange-50 flex items-center justify-center text-orange-600 font-bold border border-white shrink-0 shadow-sm overflow-hidden">
               {user?.photoURL ? (
-                <img src={user.photoURL} className="w-full h-full rounded-full object-cover" alt="" />
+                <img src={user.photoURL} className="w-full h-full object-cover" alt="Profile" />
               ) : (
-                user?.displayName?.[0] || user?.email?.[0].toUpperCase()
+                (user?.displayName?.[0] || user?.email?.[0] || "U").toUpperCase()
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-sm text-neutral-800 truncate">
-                {user?.displayName || "User"}
-              </p>
-              <p className="text-[11px] text-neutral-500 truncate font-medium">
-                {user?.email}
-              </p>
-            </div>
-          </div>
 
-          <div className="flex items-center justify-between mt-3 px-2">
-            {/* Added onClick for Settings navigation */}
-            <button 
-              onClick={() => navigate("/settings")} 
-              className="flex items-center gap-1.5 text-xs font-bold text-neutral-500 hover:text-black transition-colors"
-            >
-              <Settings size={14} /> Settings
-            </button>
-            <button 
-              onClick={handleLogout}
-              className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-red-50 hover:text-red-600 text-neutral-400 transition-all"
-              title="Logout"
-            >
-              <LogOut size={16} />
-            </button>
+            {/* Action Icons */}
+            <div className="flex items-center gap-1.5 pr-1">
+              <button 
+                onClick={() => navigate("/settings")} 
+                className="p-2 text-slate-400 hover:bg-white hover:text-slate-700 rounded-xl transition-all shadow-sm border border-transparent hover:border-slate-100"
+                title="Settings"
+              >
+                <Settings size={18} />
+              </button>
+              <button 
+                onClick={handleLogout}
+                className="p-2 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all shadow-sm border border-transparent hover:border-red-100"
+                title="Logout"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+            
           </div>
         </div>
       </aside>
 
       {/* Modals */}
       {showCreate && (
-        <ModernModal title="Create New Circle">
-          <input
-            value={circleName}
-            onChange={(e) => setCircleName(e.target.value)}
-            placeholder="What's the name of your group?"
-            className="w-full border-2 border-black rounded-xl px-4 py-3 text-sm mb-4 outline-none focus:ring-2 ring-emerald-100"
-          />
-          <div className="relative mb-6">
-            <select
-              value={circleType}
-              onChange={(e) => setCircleType(e.target.value)}
-              className="w-full border-2 border-black rounded-xl px-4 py-3 text-sm appearance-none outline-none font-medium bg-white"
-            >
-              <option>Family</option>
-              <option>Friends</option>
-              <option>College</option>
-              <option>Club</option>
-            </select>
-            <span className="absolute right-4 top-4 pointer-events-none text-neutral-400 text-xs">▼</span>
-          </div>
-          <div className="flex gap-3">
-            <button onClick={() => setShowCreate(false)} className="flex-1 border-2 border-black rounded-xl py-3 text-sm font-bold hover:bg-neutral-50">Cancel</button>
-            <button onClick={handleCreateCircle} className="flex-1 bg-black text-white rounded-xl py-3 text-sm font-bold hover:bg-neutral-800 shadow-lg shadow-black/20">Confirm</button>
+        <ModernModal title="Create New Circle" onClose={() => setShowCreate(false)}>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Circle Name</label>
+              <input
+                value={circleName}
+                onChange={(e) => setCircleName(e.target.value)}
+                placeholder="e.g. The Smiths, College Crew"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:bg-white focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all text-slate-800 placeholder-slate-400"
+              />
+            </div>
+            <div className="relative">
+              <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1">Category</label>
+              <select
+                value={circleType}
+                onChange={(e) => setCircleType(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm appearance-none outline-none font-medium text-slate-700 focus:bg-white focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer"
+              >
+                <option>Family</option>
+                <option>Friends</option>
+                <option>College</option>
+                <option>Club</option>
+                <option>Custom</option>
+              </select>
+              <span className="absolute right-4 top-[34px] pointer-events-none text-slate-400 text-xs">▼</span>
+            </div>
+            <div className="flex gap-3 mt-6 pt-2">
+              <button onClick={() => setShowCreate(false)} className="flex-1 bg-white border border-slate-200 rounded-xl py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
+              <button onClick={handleCreateCircle} className="flex-1 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-xl py-3 text-sm font-bold hover:shadow-lg hover:shadow-slate-900/20 transition-all active:scale-[0.98]">Create</button>
+            </div>
           </div>
         </ModernModal>
       )}
 
       {showJoin && (
-        <ModernModal title="Join with Code">
-          <input
-            value={inviteCode}
-            onChange={(e) => setInviteCode(e.target.value)}
-            placeholder="Enter the 6-digit code"
-            className="w-full border-2 border-black rounded-xl px-4 py-3 text-sm mb-6 outline-none text-center text-lg font-mono tracking-widest uppercase"
-          />
-          <div className="flex gap-3">
-            <button onClick={() => setShowJoin(false)} className="flex-1 border-2 border-black rounded-xl py-3 text-sm font-bold hover:bg-neutral-50">Cancel</button>
-            <button onClick={handleJoinCircle} className="flex-1 bg-black text-white rounded-xl py-3 text-sm font-bold hover:bg-neutral-800 shadow-lg shadow-black/20">Join Circle</button>
+        <ModernModal title="Join a Circle" onClose={() => setShowJoin(false)}>
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-1 text-center">Enter Invite Code</label>
+            <input
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              placeholder="XXXXXX"
+              maxLength={6}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 text-center text-xl font-mono tracking-[0.5em] uppercase outline-none focus:bg-white focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all text-slate-800 placeholder-slate-300 mb-6"
+            />
+            <div className="flex gap-3">
+              <button onClick={() => setShowJoin(false)} className="flex-1 bg-white border border-slate-200 rounded-xl py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors">Cancel</button>
+              <button onClick={handleJoinCircle} disabled={!inviteCode.trim()} className="flex-1 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-xl py-3 text-sm font-bold hover:shadow-lg hover:shadow-slate-900/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100">Join Now</button>
+            </div>
           </div>
         </ModernModal>
       )}
@@ -262,11 +283,16 @@ export default function Sidebar() {
   );
 }
 
-function ModernModal({ title, children }) {
+// Upgraded Glassmorphic Modal
+function ModernModal({ title, children, onClose }) {
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl animate-in fade-in zoom-in duration-200">
-        <h2 className="text-xl font-serif font-bold mb-6 text-neutral-900">{title}</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-sm animate-in fade-in duration-200">
+      {/* Click-away backdrop */}
+      <div className="absolute inset-0" onClick={onClose} />
+      
+      {/* Modal Card */}
+      <div className="relative bg-white/90 backdrop-blur-2xl w-full max-w-sm rounded-[24px] p-8 shadow-[0_20px_60px_rgb(0,0,0,0.1)] border border-white animate-in zoom-in-95 duration-200">
+        <h2 className="text-xl font-bold mb-6 text-slate-800 text-center tracking-tight">{title}</h2>
         {children}
       </div>
     </div>
